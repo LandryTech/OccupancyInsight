@@ -268,8 +268,12 @@ if __name__ == "__main__":
     else:
         print(f"\n[INFO] Gym is CLOSED - will log when gym opens")
     
-    # Schedule periodic logging every 15 minutes
-    schedule.every(INTERVAL_MINUTES).minutes.do(log_occupancy)
+    # Schedule logging at exact times (prevents drift)
+    # This schedules at :00, :15, :30, :45 of EVERY hour
+    schedule.every().hour.at(":00").do(log_occupancy)
+    schedule.every().hour.at(":15").do(log_occupancy)
+    schedule.every().hour.at(":30").do(log_occupancy)
+    schedule.every().hour.at(":45").do(log_occupancy)
 
     print(f"\nLogger is running... (Press Ctrl+C to stop)")
     print(f"Logging synced to 15-minute intervals: XX:00, XX:15, XX:30, XX:45\n")
