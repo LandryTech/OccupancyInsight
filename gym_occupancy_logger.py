@@ -2,6 +2,7 @@ import sqlite3
 import time
 import schedule
 import os
+import requests
 from datetime import datetime, time as dt_time
 from pathlib import Path
 
@@ -12,6 +13,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+from dotenv import load_dotenv
+
+# Load environment variables from keys.env
+load_dotenv("keys.env")
 
 # ========================
 # Configuration
@@ -25,6 +30,13 @@ DB_PATH = SCRIPT_DIR / "gym_occupancy.db"
 
 # Logging interval (15 minutes)
 INTERVAL_MINUTES = 15
+
+# Weather API Configuration
+# Get API key from environment variable (safer for version control)
+# If not set, falls back to placeholder
+WEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY', 'YOUR_API_KEY_HERE')
+BOSTON_LAT = 42.3601
+BOSTON_LON = -71.0589
 
 # Operating hours (24-hour format)
 OPERATING_HOURS = {
@@ -45,13 +57,15 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
     
-    # Main occupancy log
+    # Main occupancy log with weather data
     cur.execute("""
         CREATE TABLE IF NOT EXISTS occupancy_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT NOT NULL,
             facility TEXT NOT NULL,
-            occupancy INTEGER NOT NULL
+            occupancy INTEGER NOT NULL,
+            temperature REAL,
+            precipitation REAL
         )
     """)
     
@@ -100,6 +114,106 @@ def is_within_operating_hours():
     is_open = open_time <= current_time <= close_time
     
     return is_open
+
+# ========================
+# Weather Data
+# ========================
+def fetch_weather():
+    """
+    Fetch current weather data from OpenWeatherMap API
+    Returns: (temperature_feels_like, precipitation_1h) in Fahrenheit and inches
+    """
+    try:
+        # Check if API key is set
+        if WEATHER_API_KEY == "YOUR_API_KEY_HERE":
+            print("[WARNING] Weather API key not set - using default values")
+            return None, None
+        
+        # OpenWeatherMap API endpoint
+        url = f"https://api.openweathermap.org/data/2.5/weather"
+        params = {
+            'lat': BOSTON_LAT,
+            'lon': BOSTON_LON,
+            'appid': WEATHER_API_KEY,
+            'units': 'imperial'  # Fahrenheit
+        }
+        
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Extract feels-like temperature
+        temp_feels_like = data['main']['feels_like']
+        
+        # Optional: Smooth temperature using recent history to reduce sensor noise
+        # This prevents wild fluctuations from multiple weather stations
+        temp_smoothed = smooth_temperature(temp_feels_like)
+        
+        # Extract precipitation (rain in last hour)
+        # OpenWeatherMap provides rain volume for last 1 hour in mm
+        precipitation_mm = 0.0
+        if 'rain' in data and '1h' in data['rain']:
+            precipitation_mm = data['rain']['1h']
+        elif 'snow' in data and '1h' in data['snow']:
+            # Count snow as precipitation too
+            precipitation_mm = data['snow']['1h']
+        
+        # Convert mm to inches (1 mm = 0.0393701 inches)
+        precipitation_inches = precipitation_mm * 0.0393701
+        
+        return temp_smoothed, precipitation_inches
+    
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Weather API request failed: {e}"
+        print(f"[ERROR] {error_msg}")
+        log_error("weather_api_error", error_msg)
+        return None, None
+    except Exception as e:
+        error_msg = f"Error fetching weather: {e}"
+        print(f"[ERROR] {error_msg}")
+        log_error("weather_error", error_msg)
+        return None, None
+
+
+def smooth_temperature(current_temp):
+    """
+    Smooth temperature using exponential moving average to reduce sensor noise.
+    This helps with fluctuations from multiple weather stations.
+    """
+    try:
+        # Get last 3 temperature readings
+        conn = sqlite3.connect(DB_PATH)
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT temperature 
+            FROM occupancy_log 
+            WHERE temperature IS NOT NULL 
+            ORDER BY timestamp DESC 
+            LIMIT 3
+        """)
+        recent_temps = [row[0] for row in cur.fetchall()]
+        conn.close()
+        
+        if len(recent_temps) == 0:
+            # No history, return current
+            return current_temp
+        
+        # Exponential moving average: 70% current, 30% recent history
+        # This smooths out station-switching noise while staying responsive
+        avg_recent = sum(recent_temps) / len(recent_temps)
+        smoothed = (0.7 * current_temp) + (0.3 * avg_recent)
+        
+        # Sanity check: don't smooth if temperature jumped more than 10°F
+        # (indicates real weather change, not sensor noise)
+        if abs(current_temp - recent_temps[0]) > 10:
+            return current_temp
+        
+        return smoothed
+        
+    except Exception as e:
+        # If smoothing fails, just return raw temperature
+        return current_temp
 
 # ========================
 # Selenium setup
@@ -163,19 +277,28 @@ def log_occupancy():
         return
     
     try:
+        # Fetch occupancy and weather data
         percent = fetch_occupancy()
+        temp, precip = fetch_weather()
         timestamp = datetime.now().isoformat(timespec="minutes")
 
         conn = sqlite3.connect(DB_PATH)
         cur = conn.cursor()
         cur.execute(
-            "INSERT INTO occupancy_log (timestamp, facility, occupancy) VALUES (?, ?, ?)",
-            (timestamp, FACILITY_NAME, percent)
+            "INSERT INTO occupancy_log (timestamp, facility, occupancy, temperature, precipitation) VALUES (?, ?, ?, ?, ?)",
+            (timestamp, FACILITY_NAME, percent, temp, precip)
         )
         conn.commit()
         conn.close()
 
-        print(f"[{timestamp}] [OK] Logged occupancy: {percent}%")
+        # Format output message
+        weather_str = ""
+        if temp is not None:
+            weather_str = f", Temp: {temp:.1f}°F"
+        if precip is not None:
+            weather_str += f", Precip: {precip:.2f}in"
+        
+        print(f"[{timestamp}] [OK] Logged occupancy: {percent}%{weather_str}")
 
     except Exception as e:
         error_msg = f"Error logging occupancy: {e}"
