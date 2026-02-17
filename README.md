@@ -117,6 +117,6 @@ To be determined upon project completion.
 For questions about this project, please open an issue on the Github repository
 
 ---
-**Repository**: https://github.com/LandryTech/OccupancyInsight 
-**Last Updated**: February 15th, 2026
+**Repository**: https://github.com/LandryTech/OccupancyInsight \
+**Last Updated**: February 15th, 2026 \
 **Project Phase**: Data Collection (Early Stage)
