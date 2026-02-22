@@ -41,6 +41,7 @@ BOSTON_LON = -71.0589
 # Operating hours (24-hour format)
 OPERATING_HOURS = {
     0: (dt_time(6, 0), dt_time(23, 0)),   # Monday: 6 AM - 11 PM
+    #0: (dt_time(11, 0), dt_time(21, 0)),   # Monday: 11 AM - ?? PM Presidents Day
     1: (dt_time(6, 0), dt_time(23, 0)),   # Tuesday: 6 AM - 11 PM
     2: (dt_time(6, 0), dt_time(23, 0)),   # Wednesday: 6 AM - 11 PM
     3: (dt_time(6, 0), dt_time(23, 0)),   # Thursday: 6 AM - 11 PM
