@@ -7,7 +7,7 @@
 
 Automated occupancy monitoring system with exploratory data analysis for Wentworth Institute of Technology's Schumann Fitness Center — building toward ML-based occupancy prediction.
 
-![Occupancy Heatmap](Analysis/OccupancyHeatMap.png)
+![Occupancy Heatmap](Analysis/occupancy_heatmap.png)
 
 ---
 
@@ -48,7 +48,7 @@ The following visualizations represent early exploratory analysis on the collect
 
 Hourly occupancy trends broken down across all 7 days of the week. Each subplot represents a single day, plotted in 1-hour increments, allowing for direct day-to-day comparison of traffic patterns throughout the gym's operating hours.
 
-![7-Day Occupancy Analysis](Analysis/7DayAnalysis.png)
+![7-Day Occupancy Analysis](Analysis/daily_averages.png)
 
 ---
 
@@ -56,7 +56,7 @@ Hourly occupancy trends broken down across all 7 days of the week. Each subplot 
 
 A heatmap visualization of occupancy intensity across hours of the day and days of the week. Darker cells indicate higher average occupancy, providing an at-a-glance view of the busiest and quietest windows throughout the week.
 
-![Occupancy Heatmap](Analysis/OccupancyHeatMap.png)
+![Occupancy Heatmap](Analysis/occupancy_heatmap.png)
 
 ---
 
@@ -64,7 +64,7 @@ A heatmap visualization of occupancy intensity across hours of the day and days 
 
 A multi-variable chart exploring the relationship between gym occupancy and environmental conditions. This visualization examines whether temperature and precipitation have a measurable influence on attendance behavior.
 
-![Occupancy vs Temperature vs Precipitation](Analysis/OccupancyVsTemperature.png)
+![Occupancy vs Temperature vs Precipitation](Analysis/occupancy_vs_weather.png)
 
 ---
 
@@ -219,5 +219,5 @@ For questions about this project, please open an issue on the GitHub repository 
 
 **Repository**: https://github.com/LandryTech/OccupancyInsight  
 **LinkedIn**: https://www.linkedin.com/in/kadenlandry/  
-**Last Updated**: March 17th, 2026  
+**Last Updated**: April 7th, 2026  
 **Project Phase**: Data Collection & Exploratory Analysis
