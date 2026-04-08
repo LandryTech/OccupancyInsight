@@ -42,7 +42,7 @@ The project is currently running on two parallel tracks:
 
 ## Analysis
 
-The following visualizations represent early exploratory analysis on the collected dataset. Charts are generated from occupancy, temperature, and precipitation data logged since the start of the collection period.
+The following visualizations represent early exploratory analysis on ~2400 observations collection since the start of the collection period. Charts are generated from occupancy, temperature, and precipitation data logged since the start of the collection period.
 
 ### Occupancy Trends by Day of Week
 
@@ -65,6 +65,46 @@ A heatmap visualization of occupancy intensity across hours of the day and days 
 A multi-variable chart exploring the relationship between gym occupancy and environmental conditions. This visualization examines whether temperature and precipitation have a measurable influence on attendance behavior.
 
 ![Occupancy vs Temperature vs Precipitation](Analysis/occupancy_vs_weather.png)
+
+---
+
+### Week-over-Week Occupancy Overlay
+
+Each line represents a single calender week of data, plotted per day and colored along a gradient from earliest to most recent. This reveals whether attendance patterns remain stable across the semester or shift over time, for example: increasing traffic as finals approach.
+
+![Week-over-Week Overlay](Analysis/week_over_week.png)
+
+---
+
+### Daily Peak Occupancy Trend
+
+A bar chart of each day's peak recorded occupancy overlaid with a 7-day rolling average. This longitudinal view tracks whether the gym is trending busier or quieter as the semester progresses, and helps identify anomalous weeks (e.g. spring break, exam periods).
+
+![Peak Occupancy Trend Over Time](Analysis/peak_trend_over_time.png)
+ 
+---
+
+### Hourly Occupancy Percentile Bands
+
+Rather than plotting a single average line, this chart shows occupancy percentile bands (10th, 25th, median, 75th, 90th) per hour of the day, split between weekdays and weekends. This makes it possible to reason probabilistically about crowding, for example: identifying hours where the gym is nearly always quiet versus hours with high uncertainty.
+
+![Occupancy Percentile Bands](Analysis/percentile_bands.png)
+
+---
+
+### Rain vs. No-Rain Occupancy Distribution
+
+Side-by-Side histograms comparing the full occupancy distribution on rainy days versus dry days. Mean occupancy is marked for each condition, providing a direct test of whether precipitation measurably drives people to the gym.
+
+![Rain vs No Rain Occupancy](Analysis/rain_vs_norain.png)
+
+---
+
+### Average Occupancy by Temperature Range
+
+Occupancy averaged across binned temperature ranges, with ±1 standard deviation error bars and sample counts annotated per bin. This chart surfaces whether colder or warmer outdoor conditions correlate with higher gym attendence, while making it clear which temperature ranges have enough data to be statistically meaningful.
+
+![Temperature Bins vs Occupancy](Analysis/temp_bins_vs_occupancy.png)
 
 ---
 
@@ -164,6 +204,7 @@ The monitoring system follows this workflow:
 
 ### 🔄 Phase 2: Exploratory Analysis (In Progress)
 - Initial trend visualizations (occupancy by day, heatmaps, environmental correlations)
+- Extended analysis: distribution plots, week-over-week trends, percentile bands, weather comparisons
 - Feature engineering and data preprocessing
 - Dataset evaluation ahead of model training
 
@@ -219,5 +260,5 @@ For questions about this project, please open an issue on the GitHub repository 
 
 **Repository**: https://github.com/LandryTech/OccupancyInsight  
 **LinkedIn**: https://www.linkedin.com/in/kadenlandry/  
-**Last Updated**: April 7th, 2026  
+**Last Updated**: April 8th, 2026  
 **Project Phase**: Data Collection & Exploratory Analysis
